@@ -1,62 +1,42 @@
 ---
 name: chart-analysis
-description: Analyze a chart — set up symbol/timeframe, add indicators, scroll to key dates, annotate, and screenshot. Use when the user wants technical analysis or chart review.
+description: Technical analysis of a crypto coin or DEX token from free data — trend, support/resistance, indicators and a rendered chart. Use when the user wants a chart read, levels, or "what does X look like".
 ---
 
 # Chart Analysis Workflow
 
-You are performing technical analysis on a TradingView chart.
+You are analysing a crypto chart with the free-market MCP tools.
 
-## Step 1: Set Up the Chart
+## Step 1: Resolve the Symbol
 
-1. `chart_set_symbol` — switch to the requested symbol
-2. `chart_set_timeframe` — set the appropriate timeframe
-3. Wait for the chart to load (the tool handles this)
+- Well-known coin → pass the ticker (`BTC`, `SOL`)
+- Token, memecoin or anything ambiguous → `symbol_search`, then use the result's `use_as`
+- Need an exact timeframe or volume-based reads (VWAP)? Use a token address; coins only get CoinGecko's 30m/4h/4D candles without volume
 
-## Step 2: Add Indicators
+## Step 2: One-Call Read
 
-Use `chart_manage_indicator` to add studies. Common names (must use FULL names):
-- "Relative Strength Index" (not RSI)
-- "Moving Average Exponential" (not EMA)
-- "Moving Average" (for SMA)
-- "MACD"
-- "Bollinger Bands"
-- "Volume"
-- "VWAP"
-- "Average True Range"
+Call `chart_analyze` with the symbol and timeframe (default `60`; use `240` or `D` for swing views).
+It returns trend, a 100-bar summary, support/resistance with touch counts, and RSI, EMA 20/50/200, MACD, Bollinger, ATR, Stochastic and VWAP.
 
-After adding, use `indicator_set_inputs` to customize settings (e.g., change EMA length to 200).
+Check `timeframe` vs `requested_timeframe` and any `note` — tell the user if the candle size differs from what they asked for.
 
-## Step 3: Navigate to Key Areas
+## Step 3: Drill Down (only if needed)
 
-- `chart_scroll_to_date` — jump to a specific date of interest
-- `chart_set_visible_range` — zoom to a specific date window
-- `chart_get_visible_range` — check what's currently visible
+- Other lengths or extra indicators → `indicators_get` with e.g. `["rsi:7", "ema:100", "bb:20:2.5"]`
+- Higher-timeframe context → a second `chart_analyze` on `D`
+- DEX token health → `quote_get` (liquidity, 24h buys/sells, market cap)
+- Market backdrop → `market_overview` (BTC dominance, Fear & Greed)
 
-## Step 4: Annotate
+## Step 4: Visual
 
-Use drawing tools to mark up the chart:
-- `draw_shape` with `horizontal_line` for support/resistance
-- `draw_shape` with `trend_line` for trend channels (needs two points)
-- `draw_shape` with `text` for annotations
+`chart_render` writes an SVG with candles, EMA lines, levels and volume. Share the returned file path or open it.
 
-## Step 5: Capture and Analyze
+## Step 5: Report
 
-1. `capture_screenshot` — screenshot the annotated chart
-2. `data_get_ohlcv` — pull recent price data for quantitative analysis
-3. `quote_get` — get the current real-time price
-4. `symbol_info` — get symbol metadata (exchange, type, session)
+1. **Price & trend** — current price, direction and why
+2. **Key levels** — nearest resistance and support with distance in %
+3. **Indicators** — what RSI, MACD, Bollinger and Stochastic say together
+4. **Volatility** — ATR as % of price
+5. **Bias** — bullish, bearish or neutral, with what would change it
 
-## Step 6: Report
-
-Provide the analysis:
-- Current price and recent range
-- Key support/resistance levels identified
-- Indicator readings (RSI overbought/oversold, MACD crossover, etc.)
-- Overall bias (bullish/bearish/neutral) with reasoning
-
-## Cleanup
-
-If you added indicators the user didn't ask for, remove them:
-- `chart_manage_indicator` with action "remove" and the entity_id
-- `draw_clear` to remove all drawings if they were temporary
+Keep it short. State that this is data, not financial advice.

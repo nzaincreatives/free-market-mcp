@@ -1,83 +1,41 @@
 ---
 name: strategy-report
-description: Generate a comprehensive strategy performance report — metrics, trade analysis, equity curve, and recommendations. Use after backtesting a Pine Script strategy.
+description: Backtest a built-in trading strategy on crypto data and write a performance report with comparisons. Use when the user asks whether a strategy works, wants to compare parameters, or asks for a strategy report.
 ---
 
-# Strategy Performance Report
+# Strategy Report Workflow
 
-You are generating a detailed performance report for a Pine Script strategy on TradingView.
+## Step 1: Pick Strategy and Market
 
-## Step 1: Gather Data
+Built-in long-only strategies for `backtest_run`:
 
-Collect all available performance data:
-1. `data_get_strategy_results` — overall metrics (net profit, win rate, profit factor, etc.)
-2. `data_get_trades` — individual trade list (max 20)
-3. `data_get_equity` — equity curve data points
-4. `chart_get_state` — current symbol, timeframe, and studies on chart
-5. `symbol_info` — symbol metadata for context
+| Strategy | Default params | Rule |
+|---|---|---|
+| `ema_cross` | fast 9, slow 21 | Buy on fast EMA crossing above slow, sell on cross below |
+| `sma_cross` | fast 50, slow 200 | Golden cross / death cross |
+| `macd_cross` | 12, 26, 9 | MACD crossing its signal line |
+| `rsi_reversion` | length 14, buy_below 30, sell_above 70 | Buy oversold, sell overbought |
+| `bb_reversion` | length 20, mult 2 | Buy below the lower band, sell above the middle band |
 
-## Step 2: Capture Visuals
+For intraday tests on a coin, use its token address (e.g. wrapped SOL) — CoinGecko coin candles are fixed at 30m/4h/4D.
 
-1. `capture_screenshot` with region "chart" — the chart with strategy overlay
-2. `capture_screenshot` with region "strategy_tester" — the Strategy Tester panel
+## Step 2: Baseline Run
 
-## Step 3: Analyze
+`backtest_run` with the defaults, `count: 1000`, and the user's fee (default 0.1 % per side).
+Note `period`, since the free sources limit how far back 1000 bars reach.
 
-### Key Metrics
-Report these if available:
-- **Net Profit** and **% return**
-- **Total Trades** and **Win Rate**
-- **Profit Factor** (target > 1.5)
-- **Max Drawdown** ($ and %)
-- **Average Trade** ($ and %)
-- **Sharpe Ratio** if available
-- **Max Consecutive Losses**
+## Step 3: Variations (2–4 runs, not a grid search)
 
-### Trade Analysis
-From the trade list:
-- Largest winner and largest loser
-- Average winner vs average loser (reward:risk)
-- Long vs short performance breakdown
-- Time in market
+- Different parameters, e.g. `params: {"fast": 12, "slow": 26}`
+- With risk exits: `stop_loss_pct`, `take_profit_pct`
+- A different timeframe
 
-### Equity Curve Assessment
-- Is it smooth and upward-sloping?
-- Any extended drawdown periods?
-- Does it show consistency or was profit front/back-loaded?
+## Step 4: Report
 
-## Step 4: Generate Report
+1. **Setup** — symbol, timeframe, period, strategy, params, fees
+2. **Results table** — total return vs buy & hold, trades, win rate, avg win/loss, profit factor, max drawdown, per run
+3. **Read** — does it beat buy & hold after fees? Is the sample big enough (under ~20 trades is anecdotal)?
+4. **Risks** — overfitting from tuning, fills at bar close without slippage, one market regime only
+5. **Open position** — mention `open_position` if one exists
 
-Format as a structured report:
-
-```
-## Strategy Report: [Strategy Name]
-**Symbol:** [symbol] | **Timeframe:** [tf] | **Period:** [date range]
-
-### Summary
-[1-2 sentence overview of performance]
-
-### Key Metrics
-| Metric | Value |
-|--------|-------|
-| Net Profit | ... |
-| Win Rate | ... |
-| Profit Factor | ... |
-| Max Drawdown | ... |
-
-### Strengths
-- [bullet points]
-
-### Weaknesses
-- [bullet points]
-
-### Recommendations
-- [specific actionable improvements]
-```
-
-## Step 5: Suggest Improvements
-
-Based on the analysis:
-- If win rate < 50% but profit factor > 1: suggest tighter entries
-- If max drawdown > 20%: suggest position sizing or stop loss adjustments
-- If profit factor < 1.2: suggest the strategy may need fundamental changes
-- If few trades: suggest widening the lookback or loosening entry criteria
+Always include the tool's disclaimer: past performance only, not financial advice.

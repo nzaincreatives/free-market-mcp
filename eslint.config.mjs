@@ -6,7 +6,7 @@
 // call sites are missed, the code parses fine and only throws at runtime.
 // `no-undef` flags those statically, so CI blocks the regression at PR time.
 //
-// Globals below are the runtime APIs used across src/ (Node + browser/CDP context).
+// Globals below are the Node runtime APIs used across src/ and tests/.
 export default [
   {
     files: ['**/*.js'],

@@ -31,8 +31,8 @@ jobs:
         run: npm run lint
 
       - name: Unit tests
-        # test:unit excludes e2e.test.js, which needs a live TradingView Desktop + CDP.
-        run: npm run test:unit
+        # Tests mock all HTTP calls, so CI needs no network access to the data APIs.
+        run: npm test
 
       - name: Audit (high severity)
         run: npm audit --audit-level=high

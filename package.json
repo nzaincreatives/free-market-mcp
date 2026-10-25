@@ -1,40 +1,33 @@
 {
-  "name": "bottrading-tradingview-mcp",
-  "version": "1.0.0",
-  "description": "Bottrading TradingView MCP — connect Claude to TradingView Desktop via Chrome DevTools Protocol. Part of the Bottrading toolkit.",
+  "name": "free-market-mcp",
+  "version": "3.0.0",
+  "description": "MCP server for crypto chart analysis from free data sources (CoinGecko, GeckoTerminal, DexScreener, DefiLlama, Birdeye) \u2014 no TradingView needed.",
   "type": "module",
   "main": "src/server.js",
-  "homepage": "https://github.com/bottradingnet/tradingview-mcp",
+  "homepage": "https://github.com/nzaincreatives/free-market-mcp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bottradingnet/tradingview-mcp.git"
+    "url": "https://github.com/nzaincreatives/free-market-mcp.git"
   },
-  "author": "Bottrading",
   "license": "MIT",
   "bin": {
-    "tv": "src/cli/index.js"
+    "free-market-mcp": "src/server.js",
+    "fm": "src/cli/index.js"
   },
-  "exports": {
-    ".": "./src/server.js",
-    "./core": "./src/core/index.js"
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
     "start": "node src/server.js",
-    "tv": "node src/cli/index.js",
-    "lint": "eslint src/",
-    "test": "node --test tests/e2e.test.js tests/pine_analyze.test.js",
-    "test:e2e": "node --test tests/e2e.test.js",
-    "test:unit": "node --test tests/pine_analyze.test.js tests/cli.test.js tests/sanitization.test.js tests/replay.test.js tests/launch.test.js tests/chart_indicator.test.js tests/chart_history.test.js tests/update.test.js tests/drawing.test.js",
-    "test:cli": "node --test tests/cli.test.js",
-    "test:all": "node --test tests/e2e.test.js tests/pine_analyze.test.js tests/cli.test.js tests/sanitization.test.js tests/replay.test.js tests/launch.test.js tests/chart_indicator.test.js tests/chart_history.test.js tests/update.test.js tests/drawing.test.js",
-    "test:verbose": "node --test --test-reporter=spec tests/e2e.test.js tests/pine_analyze.test.js",
-    "test:count": "node --test --test-reporter=spec tests/e2e.test.js 2>&1 | tail -5"
+    "fm": "node src/cli/index.js",
+    "lint": "eslint src/ tests/",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "chrome-remote-interface": "^0.33.2"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "eslint": "^9.39.4"
+    "eslint": "^9.39.5"
   }
 }

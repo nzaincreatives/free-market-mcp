@@ -1,64 +1,34 @@
 ---
 name: multi-symbol-scan
-description: Scan multiple symbols for setups, patterns, or strategy performance. Use when comparing across instruments or screening for opportunities.
+description: Scan several crypto coins or tokens at once — rank by momentum, RSI or trend and pick the setups worth a closer look. Use when the user wants to compare symbols, screen a watchlist, or find opportunities.
 ---
 
-# Multi-Symbol Scanner
+# Multi-Symbol Scan Workflow
 
-You are scanning multiple symbols for trading setups or comparing performance.
+## Step 1: Build the List
 
-## Step 1: Define the Scan
+- User named symbols → use them (resolve unclear ones with `symbol_search`)
+- "Scan my watchlist" → `watchlist_list`, then use its symbols
+- "What's moving" → `market_overview` and take its trending coins
 
-Determine:
-- **Symbols**: Which instruments to scan (user-provided or watchlist via `watchlist_get`)
-- **Timeframe**: Which timeframe to analyze
-- **Criteria**: What to look for (indicator values, strategy results, visual patterns)
+## Step 2: Cheap First Pass
 
-## Step 2: Run the Scan
+Run `batch_run` with `action: "quote"`, or `watchlist_quotes` for a saved list.
+That is one light call per symbol (coins on a watchlist share a single CoinGecko call).
 
-### For Strategy Performance Comparison
-Use `batch_run` with action `get_strategy_results`:
-```
-symbols: ["ES1!", "NQ1!", "YM1!", "RTY1!"]
-timeframes: ["15"]
-action: "get_strategy_results"
-```
+## Step 3: Indicator Pass on the Shortlist
 
-### For Screenshot Comparison
-Use `batch_run` with action `screenshot`:
-```
-symbols: ["AAPL", "MSFT", "GOOGL", "AMZN"]
-timeframes: ["D"]
-action: "screenshot"
-```
+Pick the 3–8 most interesting from step 2 and run
+`batch_run` with `action: "indicators"`, `timeframes: ["240"]` (or what the user asked), `indicators: ["rsi", "ema:50", "macd", "atr"]`.
 
-### For Custom Analysis (per-symbol)
-Loop through symbols manually:
-1. `chart_set_symbol` + `chart_set_timeframe`
-2. `chart_manage_indicator` — add the study
-3. `data_get_ohlcv` — pull price data
-4. `data_get_indicator` — read indicator values
-5. Analyze and record findings
+Free APIs allow ~30 requests/min — keep the default `delay_ms` and avoid scanning dozens of symbols with heavy actions.
 
-## Step 3: Compile Results
+## Step 4: Rank and Present
 
-Build a comparison table:
-| Symbol | Key Metric 1 | Key Metric 2 | Signal |
-|--------|-------------|-------------|--------|
+Build a table: symbol, price, 24h %, RSI (state), price vs EMA 50, MACD momentum, ATR %.
+Sort by what the user cares about (strongest trend, most oversold, highest volatility).
 
-Sort by the most relevant metric.
+## Step 5: Deep Dive
 
-## Step 4: Report
-
-Present findings:
-- Ranked list of symbols by the scan criteria
-- Highlight the strongest setups
-- Note any divergences or anomalies
-- Screenshot the top 1-2 charts for visual confirmation
-
-## Watchlist Integration
-
-To scan the user's watchlist:
-1. `watchlist_get` — read all symbols
-2. Use the symbol list for the scan
-3. `watchlist_add` — add new finds to the watchlist
+Offer `chart_analyze` on the top 1–3 and `chart_render` for a visual.
+Report failures from `batch_run` (`success: false`) rather than silently dropping them.
